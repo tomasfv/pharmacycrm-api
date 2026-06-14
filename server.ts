@@ -4,7 +4,9 @@ dotenv.config();
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
+import bcrypt from "bcryptjs";
 import sequelize from "./config/database";
+import { User } from "./models";
 import routes from "./routes";
 import { errorHandler } from "./middleware/errorHandler";
 
@@ -26,20 +28,34 @@ app.get("/api/health", (req, res) => {
 app.use("/api", routes);
 app.use(errorHandler);
 
-sequelize
-  .authenticate()
-  .then(() => {
+async function bootstrap(): Promise<void> {
+  try {
+    await sequelize.authenticate();
     console.log("Database connection established.");
-    return sequelize.sync({ alter: false });
-  })
-  .then(() => {
+
+    await sequelize.sync({ alter: false });
     console.log("Models synchronized.");
+
+    const userCount = await User.count();
+    if (userCount === 0) {
+      const hashedPassword = await bcrypt.hash("PharmaCare2026", 10);
+      await User.create({
+        name: "Admin",
+        email: "admin@pharmacare.com",
+        password: hashedPassword,
+        role: "admin",
+      });
+      console.log("Default admin user created.");
+    }
+
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
-  })
-  .catch((err: Error) => {
+  } catch (err) {
     console.error("Unable to connect to the database:", err);
-  });
+  }
+}
+
+bootstrap();
 
 export default app;

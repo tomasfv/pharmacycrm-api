@@ -7,6 +7,7 @@ import followUpRoutes from './followups';
 import contactRoutes from './contacts';
 import notificationRoutes from './notifications';
 import dashboardRoutes from './dashboard';
+import userRoutes from './users';
 
 const router = Router();
 
@@ -18,5 +19,6 @@ router.use('/followups', followUpRoutes);
 router.use('/contacts', contactRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/dashboard', dashboardRoutes);
+router.use('/users', userRoutes);
 
 export default router;
