@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { Op } from 'sequelize';
 import { auth } from '../middleware/auth';
-import { FollowUp, Patient, Prescription } from '../models';
+import { FollowUp } from '../models';
 
 const router = Router();
 
@@ -19,29 +19,19 @@ router.get('/metrics', async (req, res, next) => {
   try {
     const todayStr = getLocalDateString();
 
-    const activePatients = await Patient.count({ where: { status: 'active' } });
-    const activePrescriptions = await Prescription.count();
-    const overdueCount = await FollowUp.count({
-      where: {
-        scheduledDate: { [Op.lt]: todayStr },
-        status: { [Op.ne]: 'delivered' },
-      },
-    });
-    const upcoming = await FollowUp.findAll({
-      where: { scheduledDate: todayStr, status: 'pending_contact' },
-      limit: 5,
-    });
-    const recentPatients = await Patient.findAll({ order: [['createdAt', 'DESC']], limit: 5 });
+    const [patientsToContactToday, pendingPrescriptions, readyForPickup, overduePatients] =
+      await Promise.all([
+        FollowUp.count({ where: { scheduledDate: todayStr, status: 'pending_contact' } }),
+        FollowUp.count({ where: { status: 'prescription_received' } }),
+        FollowUp.count({ where: { status: 'prepared' } }),
+        FollowUp.count({
+          where: { scheduledDate: { [Op.lt]: todayStr }, status: { [Op.ne]: 'delivered' } },
+        }),
+      ]);
 
     res.json({
       success: true,
-      data: {
-        activePatients,
-        activePrescriptions,
-        overdueFollowUps: overdueCount,
-        upcomingFollowUps: upcoming,
-        recentActivity: recentPatients,
-      },
+      data: { patientsToContactToday, pendingPrescriptions, readyForPickup, overduePatients },
     });
   } catch (error) {
     next(error);
