@@ -23,6 +23,9 @@ const Patient = sequelize.define('Patient', {
   email: {
     type: DataTypes.STRING,
     allowNull: true,
+    set(value: string) {
+      this.setDataValue('email', value || null);
+    },
     validate: { isEmail: true },
   },
   healthInsurance: {
