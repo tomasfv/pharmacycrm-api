@@ -15,8 +15,8 @@ router.post(
   '/',
   [
     body('name').notEmpty().withMessage('Name is required'),
-    body('dni').notEmpty().withMessage('DNI is required'),
     body('phone').notEmpty().withMessage('Phone is required'),
+    body('address').optional().isString(),
   ],
   validate,
   patientController.create,

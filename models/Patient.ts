@@ -13,8 +13,10 @@ const Patient = sequelize.define('Patient', {
   },
   dni: {
     type: DataTypes.STRING,
-    allowNull: false,
-    unique: true,
+    allowNull: true,
+    set(value: string) {
+      this.setDataValue('dni', value || null);
+    },
   },
   phone: {
     type: DataTypes.STRING,
@@ -27,6 +29,10 @@ const Patient = sequelize.define('Patient', {
       this.setDataValue('email', value || null);
     },
     validate: { isEmail: true },
+  },
+  address: {
+    type: DataTypes.STRING,
+    allowNull: true,
   },
   healthInsurance: {
     type: DataTypes.STRING,
