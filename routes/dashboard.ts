@@ -19,10 +19,10 @@ router.get('/metrics', async (req, res, next) => {
   try {
     const todayStr = getLocalDateString();
 
-    const [patientsToContactToday, pendingPrescriptions, readyForPickup, overduePatients] =
+    const [patientsToContactToday, pendingOrders, readyForPickup, overduePatients] =
       await Promise.all([
         FollowUp.count({ where: { scheduledDate: todayStr, status: 'pending_contact' } }),
-        FollowUp.count({ where: { status: 'prescription_received' } }),
+        FollowUp.count({ where: { status: 'order_received' } }),
         FollowUp.count({ where: { status: 'prepared' } }),
         FollowUp.count({
           where: { scheduledDate: { [Op.lt]: todayStr }, status: { [Op.ne]: 'delivered' } },
@@ -31,7 +31,7 @@ router.get('/metrics', async (req, res, next) => {
 
     res.json({
       success: true,
-      data: { patientsToContactToday, pendingPrescriptions, readyForPickup, overduePatients },
+      data: { patientsToContactToday, pendingOrders, readyForPickup, overduePatients },
     });
   } catch (error) {
     next(error);

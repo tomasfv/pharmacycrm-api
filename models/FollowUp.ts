@@ -16,18 +16,18 @@ const FollowUp = sequelize.define('FollowUp', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  prescriptionId: {
+  orderId: {
     type: DataTypes.UUID,
     allowNull: true,
-    references: { model: 'prescriptions', key: 'id' },
+    references: { model: 'orders', key: 'id' },
   },
   medication: {
     type: DataTypes.STRING,
     allowNull: true,
   },
   status: {
-    type: DataTypes.ENUM('pending_contact', 'contacted', 'prescription_received', 'prepared', 'delivered'),
-    defaultValue: 'prescription_received',
+    type: DataTypes.ENUM('pending_contact', 'contacted', 'order_received', 'prepared', 'delivered'),
+    defaultValue: 'order_received',
   },
   scheduledDate: {
     type: DataTypes.DATEONLY,

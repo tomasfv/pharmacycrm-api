@@ -1,33 +1,33 @@
 import User from './User';
 import Patient from './Patient';
 import Medication from './Medication';
-import Prescription from './Prescription';
-import PrescriptionMedication from './PrescriptionMedication';
+import Order from './Order';
+import OrderMedication from './OrderMedication';
 import FollowUp from './FollowUp';
 import Contact from './Contact';
 import Notification from './Notification';
 
-Patient.hasMany(Prescription, { foreignKey: 'patientId', as: 'prescriptions' });
-Prescription.belongsTo(Patient, { foreignKey: 'patientId', as: 'patient' });
+Patient.hasMany(Order, { foreignKey: 'patientId', as: 'orders' });
+Order.belongsTo(Patient, { foreignKey: 'patientId', as: 'patient' });
 
-Prescription.hasMany(PrescriptionMedication, { foreignKey: 'prescriptionId', as: 'medications' });
-PrescriptionMedication.belongsTo(Prescription, { foreignKey: 'prescriptionId' });
+Order.hasMany(OrderMedication, { foreignKey: 'orderId', as: 'medications' });
+OrderMedication.belongsTo(Order, { foreignKey: 'orderId' });
 
-Medication.hasMany(PrescriptionMedication, { foreignKey: 'medicationId' });
-PrescriptionMedication.belongsTo(Medication, { foreignKey: 'medicationId' });
+Medication.hasMany(OrderMedication, { foreignKey: 'medicationId' });
+OrderMedication.belongsTo(Medication, { foreignKey: 'medicationId' });
 
 Patient.hasMany(FollowUp, { foreignKey: 'patientId', as: 'followUps' });
 FollowUp.belongsTo(Patient, { foreignKey: 'patientId', as: 'patient' });
 
-Prescription.hasMany(FollowUp, { foreignKey: 'prescriptionId', as: 'followUps' });
-FollowUp.belongsTo(Prescription, { foreignKey: 'prescriptionId' });
+Order.hasMany(FollowUp, { foreignKey: 'orderId', as: 'followUps' });
+FollowUp.belongsTo(Order, { foreignKey: 'orderId' });
 
 export {
   User,
   Patient,
   Medication,
-  Prescription,
-  PrescriptionMedication,
+  Order,
+  OrderMedication,
   FollowUp,
   Contact,
   Notification,

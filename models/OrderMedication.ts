@@ -1,16 +1,16 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/database';
 
-const PrescriptionMedication = sequelize.define('PrescriptionMedication', {
+const OrderMedication = sequelize.define('OrderMedication', {
   id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
     primaryKey: true,
   },
-  prescriptionId: {
+  orderId: {
     type: DataTypes.UUID,
     allowNull: false,
-    references: { model: 'prescriptions', key: 'id' },
+    references: { model: 'orders', key: 'id' },
   },
   medicationId: {
     type: DataTypes.UUID,
@@ -32,8 +32,8 @@ const PrescriptionMedication = sequelize.define('PrescriptionMedication', {
     defaultValue: '',
   },
 }, {
-  tableName: 'prescription_medications',
+  tableName: 'order_medications',
   timestamps: false,
 });
 
-export default PrescriptionMedication;
+export default OrderMedication;

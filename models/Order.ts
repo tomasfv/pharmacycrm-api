@@ -1,7 +1,7 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/database';
 
-const Prescription = sequelize.define('Prescription', {
+const Order = sequelize.define('Order', {
   id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
@@ -29,7 +29,7 @@ const Prescription = sequelize.define('Prescription', {
     allowNull: true,
   },
 }, {
-  tableName: 'prescriptions',
+  tableName: 'orders',
 });
 
-export default Prescription;
+export default Order;

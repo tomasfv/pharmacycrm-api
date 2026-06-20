@@ -33,7 +33,7 @@ export const getById = async (req: Request, res: Response, next: NextFunction): 
     const patient = await Patient.findByPk(req.params.id as string, {
       include: [
         {
-          association: 'prescriptions',
+          association: 'orders',
           include: [{ association: 'medications' }],
           order: [['createdAt', 'DESC']] as [[string, string]],
         },
