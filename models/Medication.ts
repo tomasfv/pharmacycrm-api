@@ -11,21 +11,6 @@ const Medication = sequelize.define('Medication', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  brand: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    defaultValue: '',
-  },
-  drug: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    defaultValue: '',
-  },
-  laboratory: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    defaultValue: '',
-  },
 }, {
   tableName: 'medications',
   createdAt: 'createdAt',

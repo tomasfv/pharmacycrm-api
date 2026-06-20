@@ -9,9 +9,6 @@ export const list = async (req: Request, res: Response, next: NextFunction): Pro
     if (search) {
       where[Op.or] = [
         { name: { [Op.iLike]: `%${search}%` } },
-        { brand: { [Op.iLike]: `%${search}%` } },
-        { drug: { [Op.iLike]: `%${search}%` } },
-        { laboratory: { [Op.iLike]: `%${search}%` } },
       ];
     }
     const offset = (parseInt(page as string) - 1) * parseInt(limit as string);

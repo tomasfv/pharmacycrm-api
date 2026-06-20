@@ -26,7 +26,6 @@ export const create = async (req: Request, res: Response, next: NextFunction): P
         medicationId: m.medicationId as string,
         medicationName: m.medicationName as string,
         quantity: (m.quantity as string) || '1',
-        frequency: (m.frequency as string) || '',
       }));
       await OrderMedication.bulkCreate(items);
     }
@@ -63,7 +62,6 @@ export const update = async (req: Request, res: Response, next: NextFunction): P
         medicationId: m.medicationId as string,
         medicationName: m.medicationName as string,
         quantity: (m.quantity as string) || '1',
-        frequency: (m.frequency as string) || '',
       }));
       await OrderMedication.bulkCreate(items);
     }

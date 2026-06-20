@@ -26,11 +26,6 @@ const OrderMedication = sequelize.define('OrderMedication', {
     allowNull: false,
     defaultValue: '1',
   },
-  frequency: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    defaultValue: '',
-  },
 }, {
   tableName: 'order_medications',
   timestamps: false,
