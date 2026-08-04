@@ -25,10 +25,10 @@ const FollowUp = sequelize.define('FollowUp', {
     type: DataTypes.STRING,
     allowNull: true,
   },
-  status: {
-    type: DataTypes.ENUM('pending_contact', 'contacted', 'order_received', 'prepared', 'delivered'),
-    defaultValue: 'order_received',
-  },
+    status: {
+      type: DataTypes.ENUM('pending_contact', 'contacted', 'order_received', 'prepared', 'delivered', 'cancelled'),
+      defaultValue: 'order_received',
+    },
   scheduledDate: {
     type: DataTypes.DATEONLY,
     allowNull: false,

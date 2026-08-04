@@ -21,11 +21,11 @@ router.get('/metrics', async (req, res, next) => {
 
     const [patientsToContactToday, pendingOrders, readyForPickup, overduePatients] =
       await Promise.all([
-        FollowUp.count({ where: { scheduledDate: todayStr, status: 'pending_contact' } }),
+        FollowUp.count({ where: { status: 'pending_contact' }, distinct: true, col: 'patientId' }),
         FollowUp.count({ where: { status: 'order_received' } }),
         FollowUp.count({ where: { status: 'prepared' } }),
         FollowUp.count({
-          where: { scheduledDate: { [Op.lt]: todayStr }, status: { [Op.ne]: 'delivered' } },
+          where: { scheduledDate: { [Op.lt]: todayStr }, status: { [Op.and]: [{ [Op.ne]: 'delivered' }, { [Op.ne]: 'cancelled' }] } },
         }),
       ]);
 
