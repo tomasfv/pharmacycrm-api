@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { Op } from 'sequelize';
 import { auth } from '../middleware/auth';
-import { FollowUp } from '../models';
+import { FollowUp, Order } from '../models';
 
 const router = Router();
 
@@ -25,7 +25,15 @@ router.get('/metrics', async (req, res, next) => {
         FollowUp.count({ where: { status: 'order_received' } }),
         FollowUp.count({ where: { status: 'prepared' } }),
         FollowUp.count({
-          where: { scheduledDate: { [Op.lt]: todayStr }, status: { [Op.and]: [{ [Op.ne]: 'delivered' }, { [Op.ne]: 'cancelled' }] } },
+          where: {
+            status: { [Op.and]: [{ [Op.ne]: 'delivered' }, { [Op.ne]: 'cancelled' }] },
+          },
+          include: [{
+            model: Order,
+            required: true,
+            attributes: [],
+            where: { nextPickupDate: { [Op.lt]: todayStr } },
+          }],
         }),
       ]);
 
