@@ -127,6 +127,21 @@ The client starts on **http://localhost:5173** with API requests proxied to `loc
 
 ---
 
+## Testing
+
+The API uses **node:test** (built-in runner) + **Supertest** for endpoint tests. Tests run against **mocked data**: they never connect to a database, so they never insert, modify, or delete real records.
+
+```bash
+cd api
+npm test
+```
+
+- Tests cover the endpoint contract for `contacts`, `followups`, `medications`, `orders`, and `patients`: authentication (`401`), validation (`400`), status codes, and response shape (`{ success, data }`).
+- The Sequelize models used by those routes are mocked (`tests/helpers/setup.ts`). A safety net fails the test loudly if any real `sequelize.*` call is attempted.
+- No database setup required.
+
+---
+
 ## API Endpoints
 
 All endpoints return `{ success: boolean, data?: ..., message?: string }`.
