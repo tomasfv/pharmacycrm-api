@@ -1,0 +1,64 @@
+# PharmaCare CRM — Docker Compose
+#
+# Copy this file to the PARENT directory of api/ and client/:
+#
+#   mkdir PharmacyCRM && cd PharmacyCRM
+#   git clone <repo-api> api
+#   git clone <repo-client> client
+#   cp api/docker-compose.example.yml docker-compose.yml
+#
+# Replace the placeholder values below, then run:
+#
+#   docker compose up
+#
+# Then open http://localhost:5173
+
+services:
+  # PostgreSQL database
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: changeme
+      POSTGRES_DB: pharmacycrm
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # Express API backend
+  api:
+    build: ./api
+    ports:
+      - "4000:4000"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: pharmacycrm
+      DB_USER: postgres
+      DB_PASSWORD: changeme
+      JWT_SECRET: changeme
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # React client (Vite dev server with hot-reload)
+  client:
+    build: ./client
+    ports:
+      - "5173:5173"
+    environment:
+      API_URL: http://api:4000
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    depends_on:
+      - api
+
+volumes:
+  pgdata:

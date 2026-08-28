@@ -40,6 +40,9 @@ PharmacyCRM/
 │   ├── middleware/         # Auth, error handler, validation
 │   ├── models/            # Sequelize models (8)
 │   ├── routes/            # Express route definitions
+│   ├── tests/             # API tests (node:test + Supertest)
+│   ├── app.ts             # Express app
+│   ├── docker-compose.example.yml # Docker template
 │   └── server.ts          # Entry point
 │
 ├── client/                 # Frontend (React + Vite)
@@ -52,7 +55,7 @@ PharmacyCRM/
 │   │   └── utils/          # Utility functions
 │   ├── vercel.json         # Vercel SPA rewrites
 │   └── vite.config.ts      # Vite configuration with proxy
-└── README.md
+
 ```
 
 ---
@@ -62,10 +65,47 @@ PharmacyCRM/
 ### Prerequisites
 
 - Node.js 22+
-- PostgreSQL 14+ running locally on port 5432
+- PostgreSQL 14+ running locally on port 5432 (not required with Docker)
 - npm
 
-### Local Database Setup
+### Docker (Recommended)
+
+The fastest way to run the project locally. No need to install Node or PostgreSQL manually.
+
+**Setup:**
+
+```bash
+# 1. Clone both repos in the same parent folder
+mkdir PharmacyCRM && cd PharmacyCRM
+git clone <repo-url-for-api> api
+git clone <repo-url-for-client> client
+
+# 2. Copy the docker-compose template and replace the placeholder values
+cp api/docker-compose.example.yml docker-compose.yml
+# Open docker-compose.yml and replace "changeme" with your own passwords
+
+# 3. Start everything
+docker compose up
+```
+
+| Service | URL | Description |
+|---|---|---|
+| **Client** | http://localhost:5173 | React + Vite (hot-reload) |
+| **API** | http://localhost:4000 | Express backend |
+| **PostgreSQL** | localhost:5432 | Database (data persists in volume `pgdata`) |
+
+```bash
+docker compose up          # Start with live logs
+docker compose up -d       # Start in background
+docker compose down        # Stop containers (data persists)
+docker compose down -v     # Stop containers AND delete database data
+docker compose logs api    # View API logs only
+docker compose logs client # View client logs only
+```
+
+### Local Setup (without Docker)
+
+#### Local Database Setup
 
 ```bash
 # Create the database
