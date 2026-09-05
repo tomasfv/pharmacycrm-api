@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import { before, after, mock } from "node:test";
 import app from "../../app";
 import sequelize from "../../config/database";
-import { User } from "../../models";
+import { User, ActivityLog } from "../../models";
 
 export const request = supertest(app);
 
@@ -59,6 +59,7 @@ before(() => {
     });
   }
   mock.method(User as any, "findByPk", async () => makeInstance({ ...TEST_ADMIN }));
+  mock.method(ActivityLog as any, "create", async () => makeInstance({ id: "log-1", patientId: "p1", type: "follow_up_status_changed", description: "test", createdAt: new Date().toISOString() }));
 });
 
 after(() => {

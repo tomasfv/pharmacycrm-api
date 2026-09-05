@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import sequelize from "./config/database";
 import { User } from "./models";
 import app from "./app";
+import seed from "./scripts/seed";
 
 const PORT = process.env.PORT || 4000;
 
@@ -13,8 +14,8 @@ async function bootstrap(): Promise<void> {
     await sequelize.authenticate();
     console.log("Database connection established.");
 
-    await sequelize.sync({ alter: false });
-    console.log("Models synchronized.");
+    await sequelize.sync({ force: true });
+    console.log("Models synchronized (force).");
 
     const userCount = await User.count();
     if (userCount === 0) {
@@ -27,6 +28,8 @@ async function bootstrap(): Promise<void> {
       });
       console.log("Default admin user created.");
     }
+
+    await seed();
 
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);

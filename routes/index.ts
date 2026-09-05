@@ -8,6 +8,7 @@ import contactRoutes from './contacts';
 import notificationRoutes from './notifications';
 import dashboardRoutes from './dashboard';
 import userRoutes from './users';
+import activityLogRoutes from './activityLogs';
 
 const router = Router();
 
@@ -20,5 +21,6 @@ router.use('/contacts', contactRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/users', userRoutes);
+router.use('/activity-logs', activityLogRoutes);
 
 export default router;

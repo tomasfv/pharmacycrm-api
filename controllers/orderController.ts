@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { Order, OrderMedication, Medication, FollowUp } from '../models';
+import { Order, OrderMedication, Medication, FollowUp, ActivityLog } from '../models';
 
 export const listByPatient = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
@@ -36,6 +36,13 @@ export const create = async (req: Request, res: Response, next: NextFunction): P
       medication: medications?.map((m: Record<string, unknown>) => m.medicationName).join(', ') || '',
       status: 'order_received',
       scheduledDate: new Date().toISOString().split('T')[0],
+    });
+    const medNames = medications?.map((m: Record<string, unknown>) => m.medicationName).join(', ') || '';
+    await ActivityLog.create({
+      patientId: (order as any).patientId,
+      type: 'order_created',
+      description: `Order created: ${medNames}`,
+      metadata: { orderId: order.id, medications: medNames },
     });
     const result = await Order.findByPk(order.id, {
       include: [{ association: 'medications', include: [{ model: Medication }] }],

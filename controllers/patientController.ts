@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { Op } from 'sequelize';
-import { Patient } from '../models';
+import { Patient, ActivityLog } from '../models';
 
 export const list = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
@@ -56,6 +56,12 @@ export const getById = async (req: Request, res: Response, next: NextFunction): 
 export const create = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const patient = await Patient.create(req.body);
+    await ActivityLog.create({
+      patientId: (patient as any).id,
+      type: 'patient_registered',
+      description: `Patient ${(patient as any).name} registered in the system`,
+      metadata: { name: (patient as any).name },
+    });
     res.status(201).json({ success: true, data: patient });
   } catch (error) {
     next(error);

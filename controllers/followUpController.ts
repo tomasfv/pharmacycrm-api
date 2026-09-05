@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { Op } from 'sequelize';
-import { FollowUp, Order } from '../models';
+import { FollowUp, Order, ActivityLog } from '../models';
 
 const getLocalDateString = (): string => {
   const d = new Date();
@@ -30,6 +30,21 @@ const handleDelivered = async (orderId: string | null, newStatus: string): Promi
   }
 };
 
+const logStatusChange = async (
+  patientId: string,
+  patientName: string,
+  oldStatus: string,
+  newStatus: string,
+  medication: string | null,
+): Promise<void> => {
+  await ActivityLog.create({
+    patientId,
+    type: 'follow_up_status_changed',
+    description: `${patientName}: follow-up status changed from "${oldStatus}" to "${newStatus}"`,
+    metadata: { oldStatus, newStatus, medication },
+  });
+};
+
 export const list = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { status, search, page = '1', limit = '50' } = req.query;
@@ -54,6 +69,12 @@ export const list = async (req: Request, res: Response, next: NextFunction): Pro
 export const create = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const followUp = await FollowUp.create(req.body);
+    await ActivityLog.create({
+      patientId: (followUp as any).patientId,
+      type: 'follow_up_status_changed',
+      description: `${(followUp as any).patientName}: follow-up created with status "${(followUp as any).status}"`,
+      metadata: { status: (followUp as any).status, medication: (followUp as any).medication },
+    });
     res.status(201).json({ success: true, data: followUp });
   } catch (error) {
     next(error);
@@ -67,8 +88,19 @@ export const update = async (req: Request, res: Response, next: NextFunction): P
       res.status(404).json({ success: false, message: 'Follow-up not found.' });
       return;
     }
+    const oldStatus = (followUp as any).status;
+    const newStatus = req.body.status;
     await followUp.update(req.body);
-    await handleDelivered((followUp as any).orderId, req.body.status || (followUp as any).status);
+    await handleDelivered((followUp as any).orderId, newStatus || oldStatus);
+    if (newStatus && newStatus !== oldStatus) {
+      await logStatusChange(
+        (followUp as any).patientId,
+        (followUp as any).patientName,
+        oldStatus,
+        newStatus,
+        (followUp as any).medication,
+      );
+    }
     res.json({ success: true, data: followUp });
   } catch (error) {
     next(error);
@@ -83,8 +115,18 @@ export const updateStatus = async (req: Request, res: Response, next: NextFuncti
       res.status(404).json({ success: false, message: 'Follow-up not found.' });
       return;
     }
+    const oldStatus = (followUp as any).status;
     await followUp.update({ status });
     await handleDelivered((followUp as any).orderId, status);
+    if (status !== oldStatus) {
+      await logStatusChange(
+        (followUp as any).patientId,
+        (followUp as any).patientName,
+        oldStatus,
+        status,
+        (followUp as any).medication,
+      );
+    }
     res.json({ success: true, data: followUp });
   } catch (error) {
     next(error);
