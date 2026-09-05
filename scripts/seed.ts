@@ -59,11 +59,18 @@ interface PatientSpec {
   address: string | null;
   healthInsurance: string;
   memberNumber: string;
-  notes: string;
+  notes: string | null;
   registrationDate: string;
   firstPickupDate: string;
   medication: string;
 }
+
+type Med = { id: string; name: string };
+type Pat = { id: string; name: string };
+type Ordr = { id: string; patientId: string; patientName: string };
+type Log = { id: string; patientId: string };
+type FU = { id: string };
+type Cont = { id: string };
 
 const patientSpecs: PatientSpec[] = [
   // ── APRIL (1) ──
@@ -196,10 +203,10 @@ async function seed() {
     ]);
     console.log(`Seeded ${meds.length} medications.`);
 
-    const findMed = (name: string) => meds.find((m) => m.name === name)!;
+    const findMed = (name: string) => (meds as unknown as Med[]).find((m) => m.name === name)!;
 
     // ── Contacts ─────────────────────────────────────────
-    const contacts = await Contact.bulkCreate([
+    const contacts = (await Contact.bulkCreate([
       {
         name: "Distribuidora PharmaPlus",
         phone: "11-4567-8900",
@@ -230,11 +237,11 @@ async function seed() {
         email: "lfernandez@salmud.com.ar",
         category: "doctor",
       },
-    ]);
+    ])) as unknown as Cont[];
     console.log(`Seeded ${contacts.length} contacts.`);
 
     // ── Patients ─────────────────────────────────────────
-    const patients = await Patient.bulkCreate(
+    const patients = (await Patient.bulkCreate(
       patientSpecs.map((s) => ({
         name: s.name,
         dni: s.dni,
@@ -247,7 +254,7 @@ async function seed() {
         notes: s.notes,
         createdAt: d(s.registrationDate),
       })),
-    );
+    )) as unknown as Pat[];
     console.log(`Seeded ${patients.length} patients.`);
 
     // ── Orders, FollowUps, ActivityLogs ──────────────────
@@ -280,14 +287,14 @@ async function seed() {
       const status = currentStatus(lastPickup);
 
       // Create order
-      const order = await Order.create({
+      const order = (await Order.create({
         patientId: patient.id,
         patientName: patient.name,
         lastPickupDate: toStr(lastPickup),
         nextPickupDate: toStr(nextPickup),
         notes: null,
         createdAt: addDays(d(spec.registrationDate), 1),
-      });
+      })) as unknown as Ordr;
 
       // Create order medication
       await OrderMedication.create({
@@ -458,18 +465,18 @@ async function seed() {
     }
 
     // Create follow-ups
-    const followUps = await FollowUp.bulkCreate(followUpsToCreate);
+    const followUps = (await FollowUp.bulkCreate(followUpsToCreate)) as unknown as FU[];
     console.log(`Seeded ${followUps.length} follow-ups.`);
 
     // Create activity logs (sorted by createdAt)
     allLogs.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
-    const logs = await ActivityLog.bulkCreate(
+    const logs = (await ActivityLog.bulkCreate(
       allLogs.map((l) => ({
         ...l,
         metadata: l.metadata || undefined,
         createdAt: l.createdAt,
       })),
-    );
+    )) as unknown as Log[];
     console.log(`Seeded ${logs.length} activity logs.`);
 
     // ── Notifications ────────────────────────────────────
