@@ -7,6 +7,9 @@ import FollowUp from './FollowUp';
 import Contact from './Contact';
 import Notification from './Notification';
 import ActivityLog from './ActivityLog';
+import CatalogCategory from './CatalogCategory';
+import CatalogProduct from './CatalogProduct';
+import CatalogOrder from './CatalogOrder';
 
 Patient.hasMany(Order, { foreignKey: 'patientId', as: 'orders' });
 Order.belongsTo(Patient, { foreignKey: 'patientId', as: 'patient' });
@@ -26,6 +29,9 @@ FollowUp.belongsTo(Order, { foreignKey: 'orderId' });
 Patient.hasMany(ActivityLog, { foreignKey: 'patientId', as: 'activityLogs' });
 ActivityLog.belongsTo(Patient, { foreignKey: 'patientId', as: 'patient' });
 
+CatalogCategory.hasMany(CatalogProduct, { foreignKey: 'categoryId', as: 'products' });
+CatalogProduct.belongsTo(CatalogCategory, { foreignKey: 'categoryId', as: 'category' });
+
 export {
   User,
   Patient,
@@ -36,4 +42,7 @@ export {
   Contact,
   Notification,
   ActivityLog,
+  CatalogCategory,
+  CatalogProduct,
+  CatalogOrder,
 };

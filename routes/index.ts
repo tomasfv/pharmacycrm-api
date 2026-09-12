@@ -9,6 +9,10 @@ import notificationRoutes from './notifications';
 import dashboardRoutes from './dashboard';
 import userRoutes from './users';
 import activityLogRoutes from './activityLogs';
+import catalogCategoryRoutes from './catalogCategories';
+import catalogProductRoutes from './catalogProducts';
+import catalogOrderRoutes from './catalogOrders';
+import publicCatalogRoutes from './publicCatalog';
 
 const router = Router();
 
@@ -22,5 +26,9 @@ router.use('/notifications', notificationRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/users', userRoutes);
 router.use('/activity-logs', activityLogRoutes);
+router.use('/catalog/categories', catalogCategoryRoutes);
+router.use('/catalog/products', catalogProductRoutes);
+router.use('/catalog/orders', catalogOrderRoutes);
+router.use('/public/catalog', publicCatalogRoutes);
 
 export default router;
