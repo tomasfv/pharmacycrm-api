@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { CatalogProduct, CatalogCategory } from '../models';
+import { deleteImage } from '../utils/cloudinary';
 
 export const list = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
@@ -52,6 +53,9 @@ export const update = async (req: Request, res: Response, next: NextFunction): P
       res.status(404).json({ success: false, message: 'Product not found.' });
       return;
     }
+    if (req.body.imageUrl && req.body.imageUrl !== (product as any).imageUrl && (product as any).imageUrl) {
+      await deleteImage((product as any).imageUrl);
+    }
     await product.update(req.body);
     const result = await CatalogProduct.findByPk(req.params.id as string, {
       include: [{ model: CatalogCategory, as: 'category' }],
@@ -69,6 +73,7 @@ export const remove = async (req: Request, res: Response, next: NextFunction): P
       res.status(404).json({ success: false, message: 'Product not found.' });
       return;
     }
+    if ((product as any).imageUrl) await deleteImage((product as any).imageUrl);
     await product.destroy();
     res.json({ success: true, message: 'Product deleted.' });
   } catch (error) {
