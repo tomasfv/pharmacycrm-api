@@ -6,6 +6,12 @@ import * as catalogProductController from '../controllers/catalogProductControll
 
 const router = Router();
 
+const variationRules = [
+  body('variations').optional().isArray().withMessage('Variations must be an array'),
+  body('variations.*.label').notEmpty().withMessage('Variation label is required'),
+  body('variations.*.price').isNumeric().withMessage('Variation price must be a number'),
+];
+
 router.use(auth);
 
 router.get('/', catalogProductController.list);
@@ -17,12 +23,13 @@ router.post(
     body('name').notEmpty().withMessage('Name is required'),
     body('price').isNumeric().withMessage('Price must be a number'),
     body('categoryId').notEmpty().withMessage('Category ID is required'),
+    ...variationRules,
   ],
   validate,
   catalogProductController.create,
 );
 
-router.put('/:id', catalogProductController.update);
+router.put('/:id', variationRules, validate, catalogProductController.update);
 router.delete('/:id', catalogProductController.remove);
 
 export default router;

@@ -1,6 +1,32 @@
 import { Request, Response, NextFunction } from 'express';
-import { CatalogProduct, CatalogCategory } from '../models';
+import { Includeable } from 'sequelize';
+import { CatalogProduct, CatalogCategory, CatalogProductVariation } from '../models';
 import { deleteImage } from '../utils/cloudinary';
+
+const productIncludes: Includeable[] = [
+  { model: CatalogCategory, as: 'category' },
+  {
+    model: CatalogProductVariation,
+    as: 'variations',
+    order: [['sortOrder', 'ASC']],
+  },
+];
+
+interface VariationInput {
+  label?: string;
+  price?: number | string;
+  inStock?: boolean;
+  sortOrder?: number;
+}
+
+const buildVariations = (productId: string, variations: VariationInput[] | undefined) =>
+  (variations ?? []).map((v, i) => ({
+    productId,
+    label: String(v.label ?? '').trim(),
+    price: v.price,
+    inStock: v.inStock ?? true,
+    sortOrder: v.sortOrder ?? i,
+  }));
 
 export const list = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
@@ -10,7 +36,7 @@ export const list = async (req: Request, res: Response, next: NextFunction): Pro
 
     const products = await CatalogProduct.findAll({
       where,
-      include: [{ model: CatalogCategory, as: 'category' }],
+      include: productIncludes,
       order: [['name', 'ASC']],
     });
     res.json({ success: true, data: products });
@@ -22,7 +48,7 @@ export const list = async (req: Request, res: Response, next: NextFunction): Pro
 export const getById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const product = await CatalogProduct.findByPk(req.params.id as string, {
-      include: [{ model: CatalogCategory, as: 'category' }],
+      include: productIncludes,
     });
     if (!product) {
       res.status(404).json({ success: false, message: 'Product not found.' });
@@ -36,10 +62,13 @@ export const getById = async (req: Request, res: Response, next: NextFunction): 
 
 export const create = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const product = await CatalogProduct.create(req.body);
-    const result = await CatalogProduct.findByPk((product as any).id, {
-      include: [{ model: CatalogCategory, as: 'category' }],
-    });
+    const { variations, ...productData } = req.body;
+    const product = await CatalogProduct.create(productData);
+    const productId = (product as any).id;
+    if (Array.isArray(variations) && variations.length > 0) {
+      await CatalogProductVariation.bulkCreate(buildVariations(productId, variations));
+    }
+    const result = await CatalogProduct.findByPk(productId, { include: productIncludes });
     res.status(201).json({ success: true, data: result });
   } catch (error) {
     next(error);
@@ -53,13 +82,19 @@ export const update = async (req: Request, res: Response, next: NextFunction): P
       res.status(404).json({ success: false, message: 'Product not found.' });
       return;
     }
-    if (req.body.imageUrl && req.body.imageUrl !== (product as any).imageUrl && (product as any).imageUrl) {
+    const { variations, ...productData } = req.body;
+    if (productData.imageUrl && productData.imageUrl !== (product as any).imageUrl && (product as any).imageUrl) {
       await deleteImage((product as any).imageUrl);
     }
-    await product.update(req.body);
-    const result = await CatalogProduct.findByPk(req.params.id as string, {
-      include: [{ model: CatalogCategory, as: 'category' }],
-    });
+    await product.update(productData);
+    const productId = (product as any).id;
+    if (Array.isArray(variations)) {
+      await CatalogProductVariation.destroy({ where: { productId } });
+      if (variations.length > 0) {
+        await CatalogProductVariation.bulkCreate(buildVariations(productId, variations));
+      }
+    }
+    const result = await CatalogProduct.findByPk(productId, { include: productIncludes });
     res.json({ success: true, data: result });
   } catch (error) {
     next(error);
@@ -73,6 +108,7 @@ export const remove = async (req: Request, res: Response, next: NextFunction): P
       res.status(404).json({ success: false, message: 'Product not found.' });
       return;
     }
+    await CatalogProductVariation.destroy({ where: { productId: (product as any).id } });
     if ((product as any).imageUrl) await deleteImage((product as any).imageUrl);
     await product.destroy();
     res.json({ success: true, message: 'Product deleted.' });

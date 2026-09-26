@@ -9,6 +9,7 @@ import Notification from './Notification';
 import ActivityLog from './ActivityLog';
 import CatalogCategory from './CatalogCategory';
 import CatalogProduct from './CatalogProduct';
+import CatalogProductVariation from './CatalogProductVariation';
 import CatalogOrder from './CatalogOrder';
 
 Patient.hasMany(Order, { foreignKey: 'patientId', as: 'orders' });
@@ -32,6 +33,9 @@ ActivityLog.belongsTo(Patient, { foreignKey: 'patientId', as: 'patient' });
 CatalogCategory.hasMany(CatalogProduct, { foreignKey: 'categoryId', as: 'products' });
 CatalogProduct.belongsTo(CatalogCategory, { foreignKey: 'categoryId', as: 'category' });
 
+CatalogProduct.hasMany(CatalogProductVariation, { foreignKey: 'productId', as: 'variations' });
+CatalogProductVariation.belongsTo(CatalogProduct, { foreignKey: 'productId' });
+
 export {
   User,
   Patient,
@@ -44,5 +48,6 @@ export {
   ActivityLog,
   CatalogCategory,
   CatalogProduct,
+  CatalogProductVariation,
   CatalogOrder,
 };
