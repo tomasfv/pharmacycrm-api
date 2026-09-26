@@ -32,4 +32,17 @@ router.post(
 router.put('/:id', variationRules, validate, catalogProductController.update);
 router.delete('/:id', catalogProductController.remove);
 
+router.post(
+  '/batch',
+  [
+    body('items').isArray({ min: 1, max: 500 }).withMessage('Items must be an array of 1 to 500 items'),
+    body('items.*.sku').notEmpty().withMessage('SKU is required'),
+    body('items.*.name').notEmpty().withMessage('Name is required'),
+    body('items.*.price').isNumeric().withMessage('Price must be a number'),
+    body('items.*.categoryName').notEmpty().withMessage('Category is required'),
+  ],
+  validate,
+  catalogProductController.batchUpsert,
+);
+
 export default router;

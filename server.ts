@@ -16,6 +16,13 @@ async function bootstrap(): Promise<void> {
     await sequelize.sync({ alter: false });
     console.log("Models synchronized.");
 
+    await sequelize.query(
+      'ALTER TABLE catalog_products ADD COLUMN IF NOT EXISTS "sku" VARCHAR(255)',
+    );
+    await sequelize.query(
+      'CREATE UNIQUE INDEX IF NOT EXISTS idx_catalog_products_sku ON catalog_products ("sku") WHERE "sku" IS NOT NULL',
+    );
+
     const userCount = await User.count();
     if (userCount === 0) {
       const hashedPassword = await bcrypt.hash("PharmaCare2026", 10);

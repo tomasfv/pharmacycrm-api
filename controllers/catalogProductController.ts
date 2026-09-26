@@ -116,3 +116,70 @@ export const remove = async (req: Request, res: Response, next: NextFunction): P
     next(error);
   }
 };
+
+const normalizeName = (name: string): string =>
+  name.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+interface BatchItem {
+  sku?: string;
+  name?: string;
+  price?: number | string;
+  categoryName?: string;
+  inStock?: boolean;
+}
+
+export const batchUpsert = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const items: BatchItem[] = req.body.items ?? [];
+
+    const categories = await CatalogCategory.findAll();
+    const categoryByNorm = new Map<string, { id: string }>();
+    for (const c of categories) {
+      categoryByNorm.set(normalizeName((c as any).name), { id: (c as any).id });
+    }
+
+    let created = 0;
+    let updated = 0;
+    let unchanged = 0;
+    const errors: { index: number; sku: string; message: string }[] = [];
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const sku = String(item.sku ?? '').trim();
+      try {
+        const existing = await CatalogProduct.findOne({ where: { sku } });
+        if (existing) {
+          const nextPrice = Number(item.price);
+          if (Number((existing as any).price) === nextPrice) {
+            unchanged += 1;
+          } else {
+            await existing.update({ price: nextPrice });
+            updated += 1;
+          }
+        } else {
+          const categoryName = String(item.categoryName ?? '').trim() || 'Sin categoría';
+          let category = categoryByNorm.get(normalizeName(categoryName));
+          if (!category) {
+            const createdCategory = await CatalogCategory.create({ name: categoryName });
+            category = { id: (createdCategory as any).id };
+            categoryByNorm.set(normalizeName(categoryName), category);
+          }
+          await CatalogProduct.create({
+            sku,
+            name: String(item.name ?? '').trim(),
+            price: Number(item.price),
+            categoryId: category.id,
+            inStock: item.inStock ?? true,
+          });
+          created += 1;
+        }
+      } catch (error: any) {
+        errors.push({ index: i, sku, message: error?.message ?? 'Failed to import row.' });
+      }
+    }
+
+    res.json({ success: true, data: { created, updated, unchanged, errors } });
+  } catch (error) {
+    next(error);
+  }
+};

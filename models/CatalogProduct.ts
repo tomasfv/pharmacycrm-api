@@ -32,6 +32,10 @@ const CatalogProduct = sequelize.define('CatalogProduct', {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
   },
+  sku: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
 }, {
   tableName: 'catalog_products',
 });
