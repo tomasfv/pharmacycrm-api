@@ -16,6 +16,10 @@ const CatalogProductVariation = sequelize.define('CatalogProductVariation', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  sku: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
   price: {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false,

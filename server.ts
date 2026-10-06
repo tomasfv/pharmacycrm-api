@@ -22,6 +22,12 @@ async function bootstrap(): Promise<void> {
     await sequelize.query(
       'CREATE UNIQUE INDEX IF NOT EXISTS idx_catalog_products_sku ON catalog_products ("sku") WHERE "sku" IS NOT NULL',
     );
+    await sequelize.query(
+      'ALTER TABLE catalog_product_variations ADD COLUMN IF NOT EXISTS "sku" VARCHAR(255)',
+    );
+    await sequelize.query(
+      'CREATE UNIQUE INDEX IF NOT EXISTS idx_catalog_product_variations_sku ON catalog_product_variations ("sku") WHERE "sku" IS NOT NULL',
+    );
 
     const userCount = await User.count();
     if (userCount === 0) {

@@ -1,7 +1,7 @@
 import { describe, it, before, mock } from "node:test";
 import assert from "node:assert/strict";
 import { request, getToken, makeInstance } from "./helpers/setup";
-import { CatalogProduct, CatalogCategory } from "../models";
+import { CatalogProduct, CatalogCategory, CatalogProductVariation } from "../models";
 
 const auth = { Authorization: `Bearer ${getToken()}` };
 
@@ -38,6 +38,7 @@ before(() => {
   mock.method(CatalogProduct as any, "create", async (data: Record<string, unknown>) =>
     makeInstance({ id: createdId, ...data, createdAt: new Date().toISOString() }),
   );
+  mock.method(CatalogProductVariation as any, "findAll", async () => []);
 });
 
 describe("POST /api/catalog/products/batch", () => {
