@@ -38,3 +38,17 @@ export const create = async (req: Request, res: Response, next: NextFunction): P
     next(error);
   }
 };
+
+export const remove = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const order = await CatalogOrder.findByPk(req.params.id as string);
+    if (!order) {
+      res.status(404).json({ success: false, message: 'Order not found.' });
+      return;
+    }
+    await order.destroy();
+    res.json({ success: true, message: 'Order deleted.' });
+  } catch (error) {
+    next(error);
+  }
+};

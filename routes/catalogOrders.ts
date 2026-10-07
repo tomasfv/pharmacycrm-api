@@ -24,4 +24,6 @@ router.post(
   catalogOrderController.create,
 );
 
+router.delete('/:id', catalogOrderController.remove);
+
 export default router;
